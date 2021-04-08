@@ -7,13 +7,15 @@ services:
       context: ./
       dockerfile: Dockerfile
     container_name: jenkins
-    ports:
-      - '2022:22'
-      - '50000:50000'
-      - '50022:50022'
+    privileged: true   # TODO: required because of vboxnetctl, can I use setcap instead?
+    network_mode: host # TODO: this requires a "jenkins" entry in my host's /etc/hosts file, I don't like that but it's required to use vboxnetctl
     volumes:
-      - ${JENKINS_HOME:-./jenkins_home}:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${JENKINS_HOME:-./jenkins_home}:/var/jenkins_home:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /tmp:/tmp:rw
+    devices:
+      - "/dev/vboxdrv:/dev/vboxdrv"
     environment:
       - UID_JENKINS=${UID_JENKINS:-1000}
       - GID_JENKINS=${GID_JENKINS:-1000}
@@ -23,9 +25,8 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
-    ports:
-      - '8080:80'
-      #- '8443:443'
+    privileged: false
+    network_mode: host # TODO: this requires a "jenkins" entry in my host's /etc/hosts file, I don't like that but it's required to use vboxnetctl
     volumes:
       - ${NGINX_DEFAULT_CONF:-./nginx/default.conf}:/etc/nginx/conf.d/default.conf
       - ${NGINX_LOGS:-./logs/nginx/jenkins}:/var/log/nginx/jenkins

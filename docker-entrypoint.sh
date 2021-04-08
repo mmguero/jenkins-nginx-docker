@@ -23,6 +23,7 @@ fi
 
 # allow jenkins to run sudo docker
 echo "jenkins ALL=(root) NOPASSWD: /usr/bin/docker" > /etc/sudoers.d/jenkins
+echo "jenkins ALL=(root) NOPASSWD: /usr/bin/docker-compose" >> /etc/sudoers.d/jenkins
 chmod 0440 /etc/sudoers.d/jenkins
 
 # run Jenkins as user jenkins
